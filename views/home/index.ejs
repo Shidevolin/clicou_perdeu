@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="/css/geral.css">
+    <script src="/js/templates.js"></script>
+
+    <style>
+        .game {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game .resposta {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+        }
+
+        .game .green {
+            background-color: rgb(0, 255, 0);
+        }
+
+        .game .red {
+            background-color: rgb(255, 0, 0);
+        }
+
+        .game .mensagem_pronto {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .velocidade {
+            position: fixed;
+            color: white;
+            top: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fundo">
+        <div class="game">
+            <div class="mensagem_pronto">
+                <h1>Ready?</h1>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io();
+    var $ = document.querySelector.bind(document)
+
+    var data_i = null;
+    socket.on('comando', (comando) => {
+        if (!$('.game')) {
+            return
+        }
+        //console.log(comando)
+        var c = comando.cor
+
+        if (c == 'black') {
+            $('.game').innerHTML = `
+            <div class="mensagem_pronto">
+                <h1>Ready?</h1>
+            </div>`
+            return
+        }
+
+        var p = null
+        switch (c) {
+            case 'red':
+                p = -1;
+                break;
+            case 'green':
+                p = 1;
+                break;
+            default:
+                p = 0;
+                break;
+        }
+
+        var n_id = (Math.random() * 100).toFixed(0)
+
+        var m = `
+            <div class="resposta ${c} d${n_id}" onclick="send_resposta(${p})">
+                <div class="mensagem">
+                    <h1>CLICA!!!!</h1>
+                </div>
+            </div>
+        `
+        $('.game').innerHTML = m
+        data_i = new Date()
+
+        setTimeout(function () {
+            if ($(`.d${n_id}`)) {
+                send_resposta(p*-1)
+            }
+        }, 2500, p)
+    })
+
+    function login() {
+        var nome = $('.nome').value;
+        var patrulha = $('.patrulha').value
+
+        socket.emit('login', {
+            nome: nome,
+            patrulha: patrulha
+        }, (r) => {
+            console.log(r)
+            $('.game').innerHTML = `
+            <div class="mensagem_pronto">
+                <h1>Ready?</h1>
+            </div>`
+        })
+
+    }
+
+    function send_resposta(p) {
+        var d_now = new Date().getTime();
+        var d_fim = d_now - data_i.getTime();
+        var velo = d_fim / 1000;
+
+        socket.emit('velocidade', {
+            velocidade: velo,
+            p: p
+        }, (r) => {
+            console.log(r)
+
+            var v = ''
+            console.log(p)
+            if(p == 1 && velo < 2.490){
+                v = `<span class="velocidade">Velocidade: ${velo}s</span>`
+            }
+
+            $('.game').innerHTML = `
+            ${v}
+            <div class="mensagem_pronto">
+                <h1>Ready?</h1>
+            </div>`
+        })
+    }
+</script>
+
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="controle">
+        <button class="red" onclick="manda_cor('red')">VERMELHO</button>
+        <button class="green" onclick="manda_cor('green')">VERDE</button>
+    </div>
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io();
+    
+    function manda_cor(cor) {
+        socket.emit('manda_cor', {
+            cor: cor
+        })
+    }
+</script>
+
+</html>
