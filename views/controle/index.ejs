@@ -1,25 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <style>
+        .btn {
+            width: 100px;
+            height: 100px;
+        }
+        .red {
+            background-color: rgb(255, 0, 0);
+        }
+        .green {
+            background-color: rgb(0, 255, 0);
+        }
+    </style>
 </head>
+
 <body>
     <div class="controle">
-        <button class="red" onclick="manda_cor('red')">VERMELHO</button>
-        <button class="green" onclick="manda_cor('green')">VERDE</button>
+        <button class="red btn" onclick="manda_cor('red')">VERMELHO</button>
+        <button class="green btn" onclick="manda_cor('green')">VERDE</button>
+        <br><br><br><br>
+        <button onclick="zerar_tudo()">ZERAR_TUDO</button>
+    </div>
+
+    <style>
+        .jogadores td {
+            border: 1px black solid;
+            padding: 5px;
+        }
+        .jogadores {
+            margin-top: 40px;
+        }
+    </style>
+
+    <div class="jogadores">
+        <table>
+            <thead>
+                <tr>
+                    <td>Patrulha</td>
+                    <td>Nome</td>
+                    <td>Green Ok</td>
+                    <td>Green Bad</td>
+                    <td>Red Ok</td>
+                    <td>Red Bad</td>
+                    <td>Black</td>
+                    <td>Veloc. Media</td>
+                </tr>
+            </thead>
+
+            <tbody class="body_table">
+                
+            </tbody>
+
+        </table>
     </div>
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socket = io();
-    
+
+    window.onload = function (e) {
+        socket.emit('checa_ponto')
+    }
+
+    socket.on('ponto', (mundo) => {
+        console.log(mundo)
+        a = mundo
+
+        var tabela = ''
+
+        for (patrulha in mundo) {
+            for (elemento in mundo[patrulha]) {
+                var ele = mundo[patrulha][elemento]
+
+                var v_m = 0
+                if(ele.velocidade_media.length > 0){
+                    v_m = ele.velocidade_media.reduce((x, y) => {
+                        return x + y
+                    }) / ele.velocidade_media.length
+                }
+
+                console.log(ele, v_m)
+                tabela += `
+                <tr>
+                    <td>${patrulha}</td>
+                    <td>${elemento}</td>
+                    <td>${ele.green_ok}</td>
+                    <td>${ele.green_fail}</td>
+                    <td>${ele.red_ok}</td>
+                    <td>${ele.red_fail}</td>
+                    <td>${ele.black}</td>
+                    <td>${v_m}</td>
+                </tr>
+                `
+            }
+        }
+
+        document.querySelector('.body_table').innerHTML = tabela
+    })
+
+    var a = {}
+
     function manda_cor(cor) {
         socket.emit('manda_cor', {
             cor: cor
         })
+    }
+
+    function zerar_tudo(){
+        socket.emit('zerar_tudo')
     }
 </script>
 
